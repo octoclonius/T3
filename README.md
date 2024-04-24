@@ -7,6 +7,11 @@ Jozef Porubcin, Hannah Sanchez, Patrick Pendergast
 Do **NOT** execute any of the executable files. Remove execute permissions from all of the executable files as soon as you download them. Accidentally double-clicking on just one of the files is all it can take to run live malware on your machine.
 
 ## How to Run
+
+### Setup
+1. `pip install -r requirements.txt`
+1. `conda install --file requirements.yaml`
+
 There are two datasets: the sample and the raw one.
 
 ### Sample Dataset

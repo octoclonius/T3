@@ -8,12 +8,17 @@ from scipy.stats import entropy
 from sklearn.preprocessing import StandardScaler
 
 def get_entropy(path):
-    byte_counts = np.zeros(256, dtype=np.uint64)
-    with open(path, 'rb') as file:
-        while chunk := file.read(DEFAULT_BUFFER_SIZE):
-            byte_counts += np.bincount(np.frombuffer(chunk, dtype=np.uint8), minlength=256).astype(np.uint64)
-    file_size = os.path.getsize(path)
-    return entropy(byte_counts / file_size, base=2) if file_size else 0
+    res = 0
+    try:
+        byte_counts = np.zeros(256, dtype=np.uint64)
+        with open(path, 'rb') as file:
+            while chunk := file.read(DEFAULT_BUFFER_SIZE):
+                byte_counts += np.bincount(np.frombuffer(chunk, dtype=np.uint8), minlength=256).astype(np.uint64)
+        file_size = os.path.getsize(path)
+        res = entropy(byte_counts / file_size, base=2) if file_size else 0
+    except:
+        pass
+    return res
 
 def parse_pe(path):
     d = dict()
@@ -44,21 +49,22 @@ def scan_file(filename):
     df = pd.concat([_temp_df_data, pd.json_normalize(_temp_df)], axis=1)
     with open('columns.json', 'r') as file:
         cols = json.load(file)
-    df = pd.DataFrame({col: df[col] if col in df.columns else '' for col in cols})
+    df = pd.DataFrame({col: df[col] if col in df.columns else pd.Series() for col in cols})
     df = df.fillna(0)
     scaler = joblib.load('scaler.pkl')
     x = scaler.transform(df.drop(columns=['path']))
     
-    result = model.predict(x)
-    print(result)
-    # if result == 'malicious':
-    #   output = f'{filename} is likely 
+    #result = model.predict(x)[0]
+    confidence = model.predict_proba(x)[0][1]
     
     output = filename
 
     # Use magic number to determine file type
     filetype = magic.from_file(filename)
     output += "\nFile is of type " + filetype
+
+    # Add prediction
+    output += f'\n\nI calculate a {round(confidence * 100, 2)}% probability that the file is malware'
 
     return output
 
@@ -79,6 +85,7 @@ while True:
         break
     if event == '-IN-':
         filename = values[event]
+        window['-OUT-'].update('Scanning...')
         output = scan_file(filename)
         window['-OUT-'].update(output)
 

@@ -47,7 +47,7 @@ def scan_file(filename):
     _temp_df_data = df.copy()
     _temp_df = _temp_df_data['path'].apply(parse_pe)
     df = pd.concat([_temp_df_data, pd.json_normalize(_temp_df)], axis=1)
-    df[df.select_dtypes(include=bool).columns] = df.select_dtypes(include=bool).astype(np.int)
+    df[df.select_dtypes(include=bool).columns] = df.select_dtypes(include=bool).astype(np.int32)
     with open('columns.json', 'r') as file:
         cols = json.load(file)
     df = pd.DataFrame({col: df[col] if col in df.columns else pd.Series() for col in cols})

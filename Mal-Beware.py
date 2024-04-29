@@ -23,7 +23,7 @@ def get_entropy(path):
 def parse_pe(path):
     d = dict()
     try:
-        d = pefile.PE(path).dump_dict()
+        d = pefile.PE(path, fast_load=True).dump_dict()
         d.pop('LOAD_CONFIG', None)
         d.pop('TLS', None)
         d['Parsing Warnings'] = 'Parsing Warnings' in d
@@ -47,6 +47,7 @@ def scan_file(filename):
     _temp_df_data = df.copy()
     _temp_df = _temp_df_data['path'].apply(parse_pe)
     df = pd.concat([_temp_df_data, pd.json_normalize(_temp_df)], axis=1)
+    df[df.select_dtypes(include=bool).columns] = df.select_dtypes(include=bool).astype(np.int)
     with open('columns.json', 'r') as file:
         cols = json.load(file)
     df = pd.DataFrame({col: df[col] if col in df.columns else pd.Series() for col in cols})
@@ -56,19 +57,21 @@ def scan_file(filename):
     
     #result = model.predict(x)[0]
     confidence = model.predict_proba(x)[0][1]
-    
-    output = filename
 
     # Use magic number to determine file type
-    filetype = magic.from_file(filename)
-    output += "\nFile is of type " + filetype
+    output = filename
+    try:
+        filetype = magic.from_file(filename)
+        output += f'\nFile is of type {filetype}'
+        # Add prediction
+        output += f'\n\nI calculate a {round(confidence * 100, 2)}% probability that the file is malware.'
 
-    # Add prediction
-    output += f'\n\nI calculate a {round(confidence * 100, 2)}% probability that the file is malware'
+    except Exception as e:
+        output += f'\nCould not determine file format:\n{e}'
 
     return output
 
-with open("test_results.json", "r") as file:
+with open('test_results.json', 'r') as file:
     results = json.load(file)
     best_model_name = max(results, key=lambda m: (results[m]['accuracy'], -results[m]['time_ns']))
     best_model_name = f'models/{best_model_name.replace(' ', '_')}_model.pkl'
@@ -86,6 +89,7 @@ while True:
     if event == '-IN-':
         filename = values[event]
         window['-OUT-'].update('Scanning...')
+        window.refresh()
         output = scan_file(filename)
         window['-OUT-'].update(output)
 

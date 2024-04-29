@@ -9,8 +9,7 @@ Do **NOT** execute any of the executable files. Remove execute permissions from 
 ## How to Run
 
 ### Setup
-1. `pip install -r requirements.txt`
-1. `conda install --channel conda-forge --file requirements.yaml`
+1. `pip install -r requirements.txt; conda install -c conda-forge --file requirements.yaml`
 
 There are two datasets: the sample and the raw one.
 

@@ -1,7 +1,5 @@
 import joblib
 import json
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 
 model = joblib.load('models/Random_Forest_Classifier_model.pkl')
 with open('columns.json', 'r') as cols:

@@ -88,10 +88,8 @@ def main():
             window.refresh()
             try:
                 output = scan_file(filename)
-            except TimeoutError as e:
-                output = f'Scan timed out: {e}'
             except Exception as e:
-                output = f'Exception: {e}'
+                output = f'Error: {e}'
             window['-OUT-'].update(output)
 
     window.close()

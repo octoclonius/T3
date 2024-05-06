@@ -2,4 +2,6 @@ train
 test
 train.csv
 test.csv
+*.pptx
+*.mp4
 **/.DS_Store

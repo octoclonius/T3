@@ -7,16 +7,14 @@ from io import DEFAULT_BUFFER_SIZE
 from scipy.stats import entropy
 
 def get_entropy(path):
-    res = 0
     try:
         byte_counts = np.zeros(256, dtype=np.uint64)
         with open(path, 'rb') as file:
             while chunk := file.read(DEFAULT_BUFFER_SIZE):
                 byte_counts += np.bincount(np.frombuffer(chunk, dtype=np.uint8), minlength=256).astype(np.uint64)
-        file_size = os.path.getsize(path)
-        res = entropy(byte_counts / file_size, base=2) if file_size else 0
+        res = entropy(byte_counts, base=2)
     except:
-        pass
+        res = np.nan
     return res
 
 def parse_pe(path):
